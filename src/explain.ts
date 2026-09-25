@@ -1,4 +1,4 @@
-import { compileGlob, compileSegment } from './glob.js'
+import { compileGlob, compileSegment, expandBraces } from './glob.js'
 
 export interface GlobExplanation {
   readonly pattern: string
@@ -34,6 +34,17 @@ export function explainGlob(pattern: string, path: string): GlobExplanation {
       matched: false,
       regexSource: compiled.source,
       detail: 'pattern did not match; "**" makes a precise segment location unreliable, see regexSource',
+    }
+  }
+
+  const expansions = expandBraces(pattern)
+  if (expansions.length > 1) {
+    return {
+      pattern,
+      path,
+      matched: false,
+      regexSource: compiled.source,
+      detail: `pattern did not match; brace expansion produced ${expansions.length} alternative pattern(s), see regexSource`,
     }
   }
 

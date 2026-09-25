@@ -1,4 +1,4 @@
-export { compileGlob, matchGlob } from './glob.js'
+export { compileGlob, matchGlob, expandBraces } from './glob.js'
 export type { CompiledGlob } from './glob.js'
 export { explainGlob } from './explain.js'
 export type { GlobExplanation } from './explain.js'

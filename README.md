@@ -25,7 +25,13 @@ Per path segment (segments are split on `/`):
 Between segments, a lone `**` matches zero or more whole segments,
 including none, so `a/**/b` matches `a/b` as well as `a/x/y/b`.
 
-Brace expansion (`{a,b}`) and extglob patterns are not supported yet.
+Across the whole pattern:
+
+- `{a,b}` — brace expansion; matches if any alternative matches. Groups
+  nest and alternatives may contain `/`, so `a/{b,c/d}` matches `a/b` and
+  `a/c/d`.
+
+Extglob patterns are not supported.
 
 ## Usage
 
@@ -34,6 +40,7 @@ import { matchGlob, explainGlob, format } from 'glob-trace'
 
 matchGlob('src/**/*.test.ts', 'src/lib/format.test.ts') // true
 matchGlob('src/**/*.test.ts', 'src/lib/format.ts')      // false
+matchGlob('*.{ts,tsx}', 'index.tsx')                    // true
 ```
 
 When a match fails and it is not obvious why, use `explainGlob`:
@@ -59,13 +66,16 @@ The `human` mode is meant for a terminal; the `json` mode is meant for a
 caller that wants to consume the result programmatically, for example a
 CLI built on top of this library that offers its own `--json` flag.
 
-## Why segment-by-segment reasons stop at `**`
+## Why segment-by-segment reasons stop at `**` and `{a,b}`
 
 A pattern like `a/**/b` can absorb a different number of path segments
 depending on what is around it, so there is no single "segment 3" to point
-at when it fails to match. For patterns containing `**`, `explainGlob`
-falls back to reporting the compiled regex source instead of a segment
-index — still useful for debugging, just less precise.
+at when it fails to match. A pattern with brace expansion has a similar
+problem: `{a,b/c}/d` compiles to more than one candidate pattern, and a
+failed match doesn't say which candidate came closest. For patterns
+containing `**` or `{...}`, `explainGlob` falls back to reporting the
+compiled regex source instead of a segment index — still useful for
+debugging, just less precise.
 
 ## Status
 
